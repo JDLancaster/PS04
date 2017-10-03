@@ -1,6 +1,6 @@
 ---
 title: "STAT/MATH 495: Problem Set 04"
-author: "WRITE YOUR NAME HERE"
+author: "Jeff Lancaster"
 date: "2017-10-03"
 output:
   html_document:
@@ -12,19 +12,21 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(tidyverse)
 knitr::opts_chunk$set(echo = TRUE, fig.width=8, fig.height=4.5, message=FALSE)
 set.seed(76)
+
 ```
 
 # Collaboration
 
 Please indicate who you collaborated with on this assignment:
+Luke Haggerty
 
 
 # Load packages, data, model formulas
 
 ```{r, warning=FALSE}
-library(tidyverse)
 credit <- read_csv("http://www-bcf.usc.edu/~gareth/ISL/Credit.csv") %>%
   select(-X1) %>%
   mutate(ID = 1:n()) %>% 
@@ -53,7 +55,6 @@ credit_test <- credit %>%
   anti_join(credit_train, by="ID")
 ```
 
-
 # RMSE vs number of coefficients
 
 ```{r, echo=TRUE, warning=FALSE, message=FALSE}
@@ -62,9 +63,66 @@ credit_test <- credit %>%
 RMSE_train <- runif(n=7)
 RMSE_test <- runif(n=7)
 
-
 # Do your work here:
+#first fit the 7 models
+mod1 <- lm(model1_formula,credit_train)
+mod2 <- lm(model2_formula,credit_train)
+mod3 <- lm(model3_formula,credit_train)
+mod4 <- lm(model4_formula,credit_train)
+mod5 <- lm(model5_formula,credit_train)
+mod6 <- lm(model6_formula,credit_train)
+mod7 <- lm(model7_formula,credit_train)
 
+#Next calculate the RMSE (not MSE liked I named it)
+pred1 <- mod1 %>%
+    broom::augment(newdata=credit_test)
+MSE1 <- sqrt((mean((pred1$Balance-pred1$.fitted)^2)))
+
+pred2 <- mod2 %>%
+    broom::augment(newdata=credit_test)
+MSE2 <- sqrt((mean((pred2$Balance-pred2$.fitted)^2)))
+
+pred3 <- mod3 %>%
+    broom::augment(newdata=credit_test)
+MSE3 <- sqrt((mean((pred3$Balance-pred3$.fitted)^2)))
+
+pred4 <- mod4 %>%
+    broom::augment(newdata=credit_test)
+MSE4 <- sqrt((mean((pred4$Balance-pred4$.fitted)^2)))
+
+pred5 <- mod5 %>%
+    broom::augment(newdata=credit_test)
+MSE5 <- sqrt((mean((pred5$Balance-pred5$.fitted)^2)))
+
+pred6 <- mod6 %>%
+    broom::augment(newdata=credit_test)
+MSE6 <- sqrt((mean((pred6$Balance-pred6$.fitted)^2)))
+
+pred7 <- mod7 %>%
+    broom::augment(newdata=credit_test)
+MSE7 <- sqrt((mean((pred7$Balance-pred7$.fitted)^2)))
+
+#our final RMSE_test list
+RMSE_test <- c(MSE1, MSE2, MSE3, MSE4, MSE5, MSE6, MSE7) 
+
+#Now let's get the RMSE values for our train model
+mod1Summary <- summary(mod1)
+TrainRMSE1<-sqrt(mean(mod1Summary$residuals^2))
+mod2Summary <- summary(mod2)
+TrainRMSE2<-sqrt(mean(mod2Summary$residuals^2))
+mod3Summary <- summary(mod3)
+TrainRMSE3<-sqrt(mean(mod3Summary$residuals^2))
+mod4Summary <- summary(mod4)
+TrainRMSE4<-sqrt(mean(mod4Summary$residuals^2))
+mod5Summary <- summary(mod5)
+TrainRMSE5<-sqrt(mean(mod5Summary$residuals^2))
+mod6Summary <- summary(mod6)
+TrainRMSE6<-sqrt(mean(mod6Summary$residuals^2))
+mod7Summary <- summary(mod7)
+TrainRMSE7<-sqrt(mean(mod7Summary$residuals^2))
+
+#our final RMSE_train list
+RMSE_train<-c(TrainRMSE1, TrainRMSE2, TrainRMSE3, TrainRMSE4, TrainRMSE5, TrainRMSE6, TrainRMSE7)
 
 # Save results in a data frame. Note this data frame is in wide format.
 results <- data_frame(
@@ -92,16 +150,116 @@ ggplot(results, aes(x=num_coefficients, y=RMSE, col=type)) +
 
 # Interpret the graph
 
-Compare and contrast the two curves and hypothesize as to the root cause of any differences.
+$\textbf{Compare and contrast the two curves and hypothesize as to the root cause of any differences:}$
 
+This plot is a great example of overfitting our training set.  We can see that as the number of coefficients increase, the RMSE for our train set gets smaller and smaller, approaching 0. This makes sense because we are trying to explain both the signal and the noise present in the 20 data points by utilizing a 7-coefficient model, which is way too many coefficients. 
 
+However, because our test set still has 380 datapoints, we cannot expect our models to perfectly explain all the signal that is present in our test set.  Therefore it makes sense that as the number of coefficients increase (and we overfit our train set more and more), the RMSE for our test data increases.  
+
+An additional observation that I have is that the RMSE plummets when the # of coefficients jumps to 3.  The theory I have for why this occurrs is that a 3 coefficient model is somehow a "sweet spot" for this dataset, and that it efficiently captures most of the signal present.  As we increase the # of coefficients, we can observe the effects overfitting on our train set: RMSE for our test set increasing.  
 
 # Bonus
 
 Repeat the whole process, but let `credit_train` be a random sample of size 380
-from `credit` instead of 20. Now compare and contrast this graph with the
-one above and hypothesize as to the root cause of any differences.
+from `credit` instead of 20. Now compare and contrast this graph with the one above and hypothesize as to the root cause of any differences.
 
-```{r, echo=FALSE}
-
+```{r,}
+set.seed(79)
+credit_train2 <- credit %>% 
+  sample_n(380)
+credit_test2 <- credit %>% 
+  anti_join(credit_train, by="ID")
 ```
+
+```{r,echo=FALSE,warning=F}
+# Placeholder vectors of length 7. For now, I've filled them with arbitrary 
+# values; you will fill these in
+RMSE_train <- runif(n=7)
+RMSE_test <- runif(n=7)
+
+# Do your work here:
+#first fit the 7 models
+mod1 <- lm(model1_formula,credit_train2)
+mod2 <- lm(model2_formula,credit_train2)
+mod3 <- lm(model3_formula,credit_train2)
+mod4 <- lm(model4_formula,credit_train2)
+mod5 <- lm(model5_formula,credit_train2)
+mod6 <- lm(model6_formula,credit_train2)
+mod7 <- lm(model7_formula,credit_train2)
+
+pred1 <- mod1 %>%
+    broom::augment(newdata=credit_test2)
+MSE1 <- sqrt((mean((pred1$Balance-pred1$.fitted)^2)))
+
+pred2 <- mod2 %>%
+    broom::augment(newdata=credit_test2)
+MSE2 <- sqrt((mean((pred2$Balance-pred2$.fitted)^2)))
+
+pred3 <- mod3 %>%
+    broom::augment(newdata=credit_test2)
+MSE3 <- sqrt((mean((pred3$Balance-pred3$.fitted)^2)))
+
+pred4 <- mod4 %>%
+    broom::augment(newdata=credit_test2)
+MSE4 <- sqrt((mean((pred4$Balance-pred4$.fitted)^2)))
+
+pred5 <- mod5 %>%
+    broom::augment(newdata=credit_test2)
+MSE5 <- sqrt((mean((pred5$Balance-pred5$.fitted)^2)))
+
+pred6 <- mod6 %>%
+    broom::augment(newdata=credit_test2)
+MSE6 <- sqrt((mean((pred6$Balance-pred6$.fitted)^2)))
+
+pred7 <- mod7 %>%
+    broom::augment(newdata=credit_test2)
+MSE7 <- sqrt((mean((pred7$Balance-pred7$.fitted)^2)))
+
+
+RMSE_test <- c(MSE1, MSE2, MSE3, MSE4, MSE5, MSE6, MSE7)
+
+
+mod1Summary <- summary(mod1)
+TrainRMSE1<-sqrt(mean(mod1Summary$residuals^2))
+
+mod2Summary <- summary(mod2)
+TrainRMSE2<-sqrt(mean(mod2Summary$residuals^2))
+mod3Summary <- summary(mod3)
+TrainRMSE3<-sqrt(mean(mod3Summary$residuals^2))
+mod4Summary <- summary(mod4)
+TrainRMSE4<-sqrt(mean(mod4Summary$residuals^2))
+mod5Summary <- summary(mod5)
+TrainRMSE5<-sqrt(mean(mod5Summary$residuals^2))
+mod6Summary <- summary(mod6)
+TrainRMSE6<-sqrt(mean(mod6Summary$residuals^2))
+mod7Summary <- summary(mod7)
+TrainRMSE7<-sqrt(mean(mod7Summary$residuals^2))
+
+RMSE_train<-c(TrainRMSE1, TrainRMSE2, TrainRMSE3, TrainRMSE4, TrainRMSE5, TrainRMSE6, TrainRMSE7)
+
+# Save results in a data frame. Note this data frame is in wide format.
+results <- data_frame(
+  num_coefficients = 1:7,
+  RMSE_train,
+  RMSE_test
+) 
+
+# Some cleaning of results
+results <- results %>% 
+  # More intuitive names:
+  rename(
+    `Training data` = RMSE_train,
+    `Test data` = RMSE_test
+  ) %>% 
+  # Convert results data frame to "tidy" data format i.e. long format, so that we
+  # can ggplot it
+  gather(type, RMSE, -num_coefficients)
+
+ggplot(results, aes(x=num_coefficients, y=RMSE, col=type)) +
+  geom_line() + 
+  labs(x="# of coefficients", y="RMSE", col="Data used to evaluate \nperformance of fitted model")
+```
+
+Although we were overfitting the train set previously and interpreting signal that wasn't actually there, we are actually doing the opposite here.  By only testing our model on 20 data points, we are in a sense underfitting here, and leaving signal left un-tracked.  It still makes sense that the RMSE of the test data set goes to 0 as the # of coefficients increase. 
+
+However, now we also see that the RMSE of our training set approaches 0.  Similarly to the previous graph, we can see that RMSE plummeted in the previous graph when we used 3 coefficients.  In this graph, though, the RMSE for our test data continues to approach 0 as we add more coefficients.  I think that this is because we are able to explain all the signal present in our test set (when it is so small - only 20 points) with models with 3+ coefficients.  This shouldn't be the case - RMSE should increase as we overfit our training set, but because our test set is so small, we lose this benefit. 
